@@ -1,0 +1,633 @@
+<html>
+	<head>
+		<title> 2048 </title>
+		<style>
+			html, body {
+			  margin: 0;
+			  padding: 10px;
+			  background: #faf8ef;
+			  color: #ffffff;
+			  font-family: "Helvetica Neue", Arial, sans-serif;
+			  font-size: 36px;
+			  font-weight: bolder;
+			}
+
+			.grid-container {
+			  position: absolute;
+			  z-index: 1;
+			}
+
+			.grid-row {
+			  margin-bottom: 15px;
+			}
+
+  			.grid-row:last-child {
+    			margin-bottom: 0;
+			}
+
+			.grid-row:after {
+				content: "";
+			    display: block;
+			    clear: both;
+			}
+
+			.grid-cell {
+			  width: 106.25px;
+			  height: 106.25px;
+			  margin-right: 15px;
+			  float: left;
+			  border-radius: 3px;
+			  text-align: center;
+				color: #0B0B3B;
+			  /*background: rgba(238, 228, 218, 0.35);*/
+			  background: rgba(246, 246, 246, 0.35);
+			}
+
+			.grid-cell:last-child {
+			    margin-right: 0;
+			}
+
+			.game-container {
+				  margin-top: 40px;
+				  position: relative;
+				  padding: 15px;
+				  cursor: default;
+				  background: #bbada0;
+				  border-radius: 6px;
+				  width: 500px;
+				  height: 500px;
+				  -webkit-box-sizing: border-box;
+				  -moz-box-sizing: border-box;
+				  box-sizing: border-box;
+			}
+		</style>
+		<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+		<script>
+			var colors = {
+				/*0: "rgba(238, 228, 218, 0.35)",*/
+				0: "rgba(246, 246, 246, 0.35)",
+				/*2: "#f0e5da",
+				4: "#ede2c8",
+				8: "#feb578",
+				16: "#ff9962",
+				32: "#ff8060",
+				64: "#ff613c",
+				128: "#efd26d",
+				256: "#efd15c",
+				512: "#efcd4a",
+				1024: "#f0ca36",
+				2048: "#ccc0b3"*/
+
+				2: "#CED8F6",
+				4: "#A9BCF5",
+				8: "#819FF7",
+				16: "#5882FA",
+				32: "#5858FA",
+				64: "#58ACFA",
+				128: "#58D3F7",
+				256: "#A9F5F2",
+				512: "#00FFFF",
+				1024: "#00FFBF",
+				2048: "#9AFE2E"
+			};
+
+			$(document).ready(function() {
+			
+				
+				
+				//temporary function to demonstrate interaction between html and javascript
+				//var board = [[2,4,8,16],[32,64,128,512],[1024,0,0,0],[0,0,0,0]];
+				//var board = [[2,2,2,2],[2,0,0,0],[2,0,0,0],[2,0,0,0]];
+				
+				//setting board
+				var boardSet = false;
+				var board = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+				while (! boardSet){
+					var row = Math.floor(Math.random()*4);
+					var col = Math.floor(Math.random()*4);
+					var row2 = Math.floor(Math.random()*4);
+					var col2 = Math.floor(Math.random()*4);
+					if (row!= row2 && col!= col2){
+						board[row][col] = 2;
+						board[row2][col2] = 2;
+						boardSet = true;
+					}
+				}
+
+				//var board = [[2,4,0,0],[4,4,0,4],[2,0,0,2],[2,0,0,2]];
+				function displayText(board){
+					for(var i = 0; i < 4; i++){
+						for(var j = 0; j < 4; j++){
+							var boardID = "r"+i+"c"+j;
+							if(board[i][j]!=0){
+								$("#" + boardID).text(board[i][j]);
+							}
+						}
+					}
+				}
+				
+
+				//temporary function to demonstrate interaction between css and javascript
+				function displayColor(board){
+					for(var i = 0; i < 4; i++){
+						for(var j = 0; j < 4; j++){
+							var boardID = "r"+i+"c"+j;
+							var cellValue = board[i][j];
+							console.log(boardID + " " + colors[cellValue]);
+							$('#' + boardID).css('background', colors[cellValue]);
+						}
+					}
+				}
+				
+				//moveDown function
+				function moveDown(board){
+				
+					//moves down
+					var numCount = 0;
+					for (var col = 0; col<4; col++){
+						for (var row = 3; row>=0; row--){
+							//console.log("entered for loops");
+							if (board[row][col] != 0){
+								//startRow=row;
+								var boardID = "r" + row + "c" +col;
+								var cellValue = board[row][col];
+								numCount++;
+								board[4-numCount][col] = board[row][col];
+								//console.log("numbers so far: " + numCount);
+								var newBoardID = "r" + (4-numCount) + "c" + col;
+								//console.log(newBoardID);
+								$("#" + newBoardID).text([cellValue]);
+								$('#' + newBoardID).css('background', colors[cellValue]);
+								//console.log("partially moved it down");
+								//console.log(row);
+								//console.log(numCount);
+								if (row != (4-numCount)){
+									console.log("replacing");
+									$("#" + boardID).text("");
+									$('#' + boardID).css('background', colors[0]);
+									board[row][col] = 0;
+								}
+							}
+							
+						}
+						numCount = 0;
+					}
+					
+					//prints out board
+					/*for (var row = 0; row<4; row++){
+						for (var col = 0; col<4; col++){
+							console.log("row "+ row);
+							console.log(board[row][col]);
+						}
+					}*/
+					
+					//adds numbers
+					for (var col = 0; col<4; col++){
+						for (var row = 3; row>=1; row--){
+							var above = board[row-1][col];
+							var aboveBoardID = "r" + (row-1) + "c" + col;
+							var below = board[row][col];
+							var belowBoardID = "r" + row + "c" + col;
+							if (below == above && below!= 0){
+								$("#" + belowBoardID).text(below*2);
+								$("#" + aboveBoardID).text("");
+								$("#"+ belowBoardID).css('background',colors[below+above]);
+								$("#"+ aboveBoardID).css('background',colors[0]);
+								board[row][col]=below*2;
+								board[row-1][col]=0;
+								for (var shiftRow = 3; shiftRow>=1; shiftRow--){
+									if (board[shiftRow][col] == 0){
+										var underBoard = board[shiftRow][col];
+										var underBoardID = "r" + shiftRow + "c" + col;
+										var upBoard=board[shiftRow-1][col];
+										var upBoardID = "r" + (shiftRow-1) + "c" + col;
+										if (upBoard != 0){
+											$("#" + underBoardID).text(upBoard);
+										}
+										$("#" + upBoardID).text("");
+										$("#" + underBoardID).css('background',colors[upBoard]);
+										$("#" + upBoardID).css('background',colors[0]);
+										board[shiftRow][col] = board[shiftRow-1][col];
+										board[shiftRow-1][col]=0;
+										
+									}
+								}
+								
+							}
+						}
+					}
+					
+					for (var row = 0; row<4; row++){
+						for (var col = 0; col<4; col++){
+							console.log("row "+ row);
+							console.log(board[row][col]);
+						}
+					}
+	
+				}
+				
+				function moveUp(board){
+				
+					//moves up
+					var numCount = 0;
+					for (var col = 0; col<4; col++){
+						for (var row = 0; row<4; row++){
+							//console.log("entered for loops");
+							if (board[row][col] != 0){
+								//startRow=row;
+								var boardID = "r" + row + "c" +col;
+								var cellValue = board[row][col];
+								numCount++;
+								board[numCount-1][col] = board[row][col];
+								//console.log("numbers so far: " + numCount);
+								var newBoardID = "r" + (numCount-1) + "c" + col;
+								console.log(newBoardID);
+								$("#" + newBoardID).text([cellValue]);
+								$('#' + newBoardID).css('background', colors[cellValue]);
+								//console.log("partially moved it down");
+								//console.log(row);
+								//console.log(numCount);
+								if (row != (numCount-1)){
+									//console.log("replacing");
+									$("#" + boardID).text("");
+									$('#' + boardID).css('background', colors[0]);
+									board[row][col] = 0;
+								}
+							}
+							
+						}
+						numCount = 0;
+					}
+					
+					//prints out board
+					/*for (var row = 0; row<4; row++){
+						for (var col = 0; col<4; col++){
+							console.log("row "+ row);
+							console.log(board[row][col]);
+						}
+					}*/
+					
+					//adds numbers
+					for (var col = 0; col<4; col++){
+						for (var row = 1; row<4; row++){
+							console.log("row:");
+							console.log(row);
+							console.log("entered down for loop");
+							var above = board[row-1][col];
+							var aboveBoardID = "r" + (row-1) + "c" + col;
+							var below = board[row][col];
+							var belowBoardID = "r" + row + "c" + col;
+							console.log(above);
+							console.log(below);
+							console.log("row:");
+							console.log(row);
+							if (below == above && below!= 0){
+								console.log("row:");
+								console.log(row);
+								console.log("TWO NUMBERS FOUND EQUAL");
+								$("#" + aboveBoardID).text(below*2);
+								$("#" + belowBoardID).text("");
+								$("#"+ aboveBoardID).css('background',colors[below+above]);
+								$("#"+ belowBoardID).css('background',colors[0]);
+								board[row-1][col]=below*2;
+								board[row][col]=0;
+								
+								//printing
+								
+								/*for (var row = 0; row<4; row++){
+									for (var col = 0; col<4; col++){
+									console.log("row "+ row);
+									console.log(board[row][col]);
+									}
+								}*/
+							
+								for (var shiftRow = 0; shiftRow<3; shiftRow++){
+									if (board[shiftRow][col] == 0){
+										var upBoard = board[shiftRow][col];
+										var upBoardID = "r" + shiftRow + "c" + col;
+										var underBoard=board[shiftRow+1][col];
+										var underBoardID = "r" + (shiftRow+1) + "c" + col;
+										if (underBoard != 0){
+											$("#" + upBoardID).text(underBoard);
+										}
+										$("#" + underBoardID).text("");
+										$("#" + upBoardID).css('background',colors[underBoard]);
+										$("#" + underBoardID).css('background',colors[0]);
+										board[shiftRow][col] = board[shiftRow+1][col];
+										board[shiftRow+1][col]=0;
+										
+									}
+								}
+								
+								
+								console.log("exited for loop");
+								console.log(row);
+							}
+						}
+					}
+					
+					
+	
+				}
+				
+				function moveRight(board){
+				
+					//moves right
+					var numCount = 0;
+					for (var row = 0; row<4; row++){
+						for (var col = 3; col>=0; col--){
+							//console.log("entered for loops");
+							if (board[row][col] != 0){
+								//startRow=row;
+								var boardID = "r" + row + "c" +col;
+								var cellValue = board[row][col];
+								numCount++;
+								console.log("numCount incremented to " + numCount + " bc number found at " + boardID);
+								board[row][4-numCount] = board[row][col];
+								//console.log("col");
+								//console.log(col);
+								var newBoardID = "r" + row + "c" + (4-numCount);
+								console.log("newBoardID: " + newBoardID);
+								$("#" + newBoardID).text(cellValue);
+								console.log("set new text value");
+								$("#" + newBoardID).css('background', colors[cellValue]);
+								console.log("set new background");
+								/*for (var a = 0; a<4; a++){
+									for (var b = 0; b<4; b++){
+										console.log("row "+ a);
+										console.log(board[a][b]);
+									}
+								}*/
+								if (col != (4-numCount)){
+									//console.log("replacing");
+									//console.log("numcount: "+ numCount);
+									$("#" + boardID).text("");
+									$('#' + boardID).css('background', colors[0]);
+									board[row][col] = 0;
+								}
+							}
+							
+						}
+
+						numCount = 0;
+					}
+
+					
+					//prints out board
+					/*for (var row = 0; row<4; row++){
+						for (var col = 0; col<4; col++){
+							console.log("row "+ row);
+							console.log(board[row][col]);
+						}
+					}*/
+					
+					//adds numbers
+					for (var row = 0; row<4; row++){
+						for (var col = 0; col<3; col++){
+							console.log("row:");
+							console.log(row);
+							console.log("entered down for loop");
+							var right = board[row][col+1];
+							var rightBoardID = "r" + row + "c" + (col+1);
+							var left = board[row][col];
+							var leftBoardID = "r" + row + "c" + col;
+							console.log(right);
+							console.log(left);
+							console.log("row: " + row);
+							if (right== left && right!= 0){
+								console.log("row:");
+								console.log(row);
+								console.log("TWO NUMBERS FOUND EQUAL");
+								$("#" + rightBoardID).text(left*2);
+								$("#" + leftBoardID).text("");
+								$("#"+ rightBoardID).css('background',colors[left+right]);
+								$("#"+ leftBoardID).css('background',colors[0]);
+								board[row][col+1]=left*2;
+								board[row][col]=0;
+								
+								for (var shiftCol = 3; shiftCol>=1; shiftCol--){
+									if (board[row][shiftCol] == 0){
+										var rightBoard = board[row][shiftCol];
+										var rightBoardID = "r" + row + "c" + shiftCol;
+										var leftBoard=board[row][shiftCol-1];
+										var leftBoardID = "r" + row + "c" + (shiftCol-1);
+										if (leftBoard != 0){
+											$("#" + rightBoardID).text(leftBoard);
+										}
+										$("#" + leftBoardID).text("");
+										$("#" + rightBoardID).css('background',colors[leftBoard]);
+										$("#" + leftBoardID).css('background',colors[0]);
+										board[row][shiftCol] = board[row][shiftCol-1];
+										board[row][shiftCol-1]=0;
+										
+									}
+								}
+								
+								
+								console.log("exited for loop");
+								console.log(row);
+							}
+						}
+					}
+					
+					
+	
+				}
+
+				function moveLeft(board){
+				
+					//moves left
+					var numCount = 0;
+					for (var row = 0; row<4; row++){
+						for (var col = 0; col<=3; col++){
+							//console.log("entered for loops");
+							if (board[row][col] != 0){
+								//startRow=row;
+								var boardID = "r" + row + "c" +col;
+								var cellValue = board[row][col];
+								numCount++;
+								console.log("numCount incremented to " + numCount + " bc number found at " + boardID);
+								board[row][numCount-1] = board[row][col];
+								//console.log("col");
+								//console.log(col);
+								var newBoardID = "r" + row + "c" + (numCount-1);
+								console.log("newBoardID: " + newBoardID);
+								$("#" + newBoardID).text(cellValue);
+								console.log("set new text value");
+								$("#" + newBoardID).css('background', colors[cellValue]);
+								console.log("set new background");
+								/*for (var a = 0; a<4; a++){
+									for (var b = 0; b<4; b++){
+										console.log("row "+ a);
+										console.log(board[a][b]);
+									}
+								}*/
+								if (col != (numCount-1)){
+									//console.log("replacing");
+									//console.log("numcount: "+ numCount);
+									$("#" + boardID).text("");
+									$('#' + boardID).css('background', colors[0]);
+									board[row][col] = 0;
+								}
+							}
+							
+						}
+
+						numCount = 0;
+					}
+
+					
+					//prints out board
+					/*for (var row = 0; row<4; row++){
+						for (var col = 0; col<4; col++){
+							console.log("row "+ row);
+							console.log(board[row][col]);
+						}
+					}*/
+					
+					//adds numbers
+					for (var row = 0; row<4; row++){
+						for (var col = 3; col>=1; col--){
+							console.log("row:");
+							console.log(row);
+							console.log("entered down for loop");
+							var left = board[row][col-1];
+							var leftBoardID = "r" + row + "c" + (col-1);
+							var right = board[row][col];
+							var rightBoardID = "r" + row + "c" + col;
+							console.log(right);
+							console.log(left);
+							console.log("row: " + row);
+							if (right== left && right!= 0){
+								console.log("row:");
+								console.log(row);
+								console.log("TWO NUMBERS FOUND EQUAL");
+								$("#" + leftBoardID).text(left*2);
+								$("#" + rightBoardID).text("");
+								$("#"+ leftBoardID).css('background',colors[left+right]);
+								$("#"+ rightBoardID).css('background',colors[0]);
+								board[row][col-1]=left*2;
+								board[row][col]=0;
+								
+								for (var shiftCol = 0; shiftCol<=2; shiftCol++){
+									if (board[row][shiftCol] == 0){
+										var leftBoard = board[row][shiftCol];
+										var leftBoardID = "r" + row + "c" + shiftCol;
+										var rightBoard=board[row][shiftCol+1];
+										var rightBoardID = "r" + row + "c" + (shiftCol+1);
+										if (rightBoard != 0){
+											$("#" + leftBoardID).text(rightBoard);
+										}
+										$("#" + rightBoardID).text("");
+										$("#" + leftBoardID).css('background',colors[rightBoard]);
+										$("#" + rightBoardID).css('background',colors[0]);
+										board[row][shiftCol] = board[row][shiftCol+1];
+										board[row][shiftCol+1]=0;
+										
+									}
+								}
+								
+								
+								console.log("exited for loop");
+								console.log(row);
+							}
+						}
+					}
+					
+					
+	
+				}
+
+				function addRandNum(board){
+					var addedNum = false;
+					var counter = 0;
+					while (! addedNum){
+						counter++;
+						var row = Math.floor(Math.random()*4);
+						var col = Math.floor(Math.random()*4);
+						if (board[row][col]==0){
+							addedNum = true;
+							var boardID = "r" + row + "c" + col;
+							var randNum = Math.floor(Math.random()*10);
+							if (randNum == 9){
+								board[row][col] = 4;
+								$("#" + boardID).text("4");
+								$("#" + boardID).css('background',colors[4]);
+							}
+							else{
+								board[row][col] = 2;
+								$("#" + boardID).text("2");
+								$("#" + boardID).css('background',colors[2]);
+							}
+						}
+						if (counter>=50){
+							addedNum = true;
+						}
+					}
+				}
+				
+				var up = 38;
+				var down =40;
+				var left = 37;
+				var right = 39;
+				$(document).keydown(function(e){
+					console.log(e.keyCode);
+					if (e.keyCode == down) {
+						// Do stuff here for when the user presses the up key!
+						moveDown(board);
+						addRandNum(board);
+					}
+					if (e.keyCode == up){
+						moveUp(board);
+						addRandNum(board);
+					}
+					if (e.keyCode == right){
+						moveRight(board);
+						addRandNum(board);
+					}
+					if (e.keyCode == left){
+						moveLeft(board);
+						addRandNum(board);
+					}
+						
+					
+				});
+				
+				displayText(board);
+				displayColor(board);
+
+		});
+		</script>
+
+	</head>
+	<body>
+		<div class="game-container">
+			<div class="grid-container">
+		        <div class="grid-row">
+		          <div class="grid-cell" id = "r0c0"></div>
+		          <div class="grid-cell" id = "r0c1"></div>
+		          <div class="grid-cell" id = "r0c2"></div>
+		          <div class="grid-cell" id = "r0c3"></div>
+		        </div>
+		        <div class="grid-row">
+		          <div class="grid-cell" id = "r1c0"></div>
+		          <div class="grid-cell" id = "r1c1"></div>
+		          <div class="grid-cell" id = "r1c2"></div>
+		          <div class="grid-cell" id = "r1c3"></div>
+		        </div>
+		        <div class="grid-row">
+		          <div class="grid-cell" id = "r2c0"></div>
+		          <div class="grid-cell" id = "r2c1"></div>
+		          <div class="grid-cell" id = "r2c2"></div>
+		          <div class="grid-cell" id = "r2c3"></div>
+		        </div>
+		        <div class="grid-row">
+		          <div class="grid-cell" id = "r3c0"></div>
+		          <div class="grid-cell" id = "r3c1"></div>
+		          <div class="grid-cell" id = "r3c2"></div>
+		          <div class="grid-cell" id = "r3c3"></div>
+		        </div>
+	      	</div>
+	     </div>
+	</body>
+</html>
